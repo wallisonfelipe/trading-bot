@@ -12,6 +12,7 @@ Options:
 
 import os
 import coloredlogs
+import csv
 
 from docopt import docopt
 
@@ -19,6 +20,7 @@ from trading_bot.agent import Agent
 from trading_bot.methods import evaluate_model
 from trading_bot.utils import (
     get_stock_data,
+    get_date_data,
     format_currency,
     format_position,
     show_eval_result,
@@ -38,7 +40,16 @@ def main(eval_stock, window_size, model_name, debug):
     # Single Model Evaluation
     if model_name is not None:
         agent = Agent(window_size, pretrained=True, model_name=model_name)
-        profit, _ = evaluate_model(agent, data, window_size, debug)
+        dates = get_date_data(eval_stock)
+        profit, history = evaluate_model(agent, data, window_size, debug, dates)
+        print(history)
+        #save the history variable into csv
+        
+        with open('history.csv', 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(history)
+
+        
         show_eval_result(model_name, profit, initial_offset)
         
     # Multiple Model Evaluation
